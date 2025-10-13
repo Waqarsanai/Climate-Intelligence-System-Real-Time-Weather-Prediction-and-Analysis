@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Intelligence System: Project Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8; 
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        .nav-link {
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #004F71; /* Deep Ocean */
+        }
+        .method-step {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .method-step.active {
+            background-color: #004F71;
+            color: white;
+            transform: scale(1.05);
+        }
+        .impact-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .impact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .stat-highlight {
+            color: #004F71;
+        }
+        .btn-primary {
+            background-color: #007BA7;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #004F71;
+        }
+        .btn-secondary {
+            background-color: #E0E7FF;
+            color: #3730A3;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary.active {
+            background-color: #3730A3;
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Climate Intelligence System</h1>
+                </div>
+                <nav class="hidden md:flex md:space-x-8">
+                    <a href="#impact" class="nav-link text-gray-600 font-medium">Impact</a>
+                    <a href="#methodology" class="nav-link text-gray-600 font-medium">Methodology</a>
+                    <a href="#data" class="nav-link text-gray-600 font-medium">Data</a>
+                    <a href="#outcome" class="nav-link text-gray-600 font-medium">Outcome</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    
+        <section id="impact" class="mb-24 text-center">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Solving Weather Unpredictability</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This project addresses the critical need for an intelligent climate prediction system that delivers accurate, actionable forecasts to mitigate the significant real-world impact of unpredictable weather.</p>
+            
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+            </div>
+            
+            <div id="impact-details" class="mt-8 p-6 bg-white rounded-lg shadow-md min-h-[100px] text-left max-w-4xl mx-auto">
+                <p class="text-gray-700 text-lg">Click on a sector above to see how this project provides critical value and drives positive outcomes.</p>
+            </div>
+        </section>
+
+        
+        <section id="methodology" class="mb-24">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">A Data-Driven Approach</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">Our project follows a systematic, robust data science pipeline, from data collection to model evaluation, ensuring reliable and accurate predictions.</p>
+            </div>
+            
+            <div class="mt-12">
+                <div id="method-steps" class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+            
+                </div>
+                <div id="method-details" class="mt-8 p-6 bg-white rounded-lg shadow-md min-h-[120px] max-w-4xl mx-auto">
+                    <p class="text-gray-700 text-lg">Click a step to learn more about our process.</p>
+                </div>
+            </div>
+
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800">Advanced Machine Learning Models</h3>
+                    <p class="mt-2 text-gray-600">We leverage a combination of ensemble methods and deep learning to capture complex patterns and long-term dependencies in climate data, benchmarking performance to select the most effective algorithms.</p>
+                    <ul id="ml-models" class="mt-4 space-y-2">
+                    
+                    </ul>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Classification Accuracy</h4>
+                        <div class="chart-container !h-48 !max-h-48 mx-auto !max-w-[200px]"><canvas id="accuracyChart"></canvas></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Temp. Prediction Error</h4>
+                        <div class="chart-container !h-48 !max-h-48 mx-auto !max-w-[200px]"><canvas id="errorChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+        <section id="data" class="mb-24">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Exploring the Climate Data</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">The project relies on historical and real-time data from the OpenWeatherMap API, presenting real-world challenges that our methodology is designed to handle.</p>
+            </div>
+
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800">Dataset at a Glance</h3>
+                    <ul id="dataset-summary" class="mt-4 space-y-2 text-gray-600">
+                    
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2">
+                    <h3 class="text-xl font-semibold text-gray-800">Data Quality & Challenges</h3>
+                    <p class="text-gray-600 mt-2">A key part of this project is handling real-world, messy data, which includes missing values and sensor errors that require extensive preprocessing.</p>
+                    <div class="chart-container !h-56 !max-h-56"><canvas id="dataQualityChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Simulated Data Explorer</h3>
+                <div class="flex items-center space-x-4 mb-4">
+                    <label for="feature-select" class="font-medium text-gray-700">Select Feature:</label>
+                    <select id="feature-select" class="p-2 border rounded-md shadow-sm">
+                        <option value="temperature" selected>Temperature (°C)</option>
+                        <option value="humidity">Humidity (%)</option>
+                        <option value="pressure">Pressure (hPa)</option>
+                    </select>
+                </div>
+                <div class="chart-container"><canvas id="explorerChart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="outcome" class="text-center">
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Project Outcome & Significance</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">This project serves as an end-to-end data science demonstration, integrating data engineering, advanced machine learning, and statistical analysis to solve a tangible, high-impact problem.</p>
+            <div class="mt-12 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Key Deliverables</h3>
+                    <ul id="deliverables-list" class="space-y-3">
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md flex items-center">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Scalable & Deployable</h3>
+                        <p class="text-gray-600">The resulting system is designed to be scalable and deployable, directly addressing genuine needs in agriculture, public safety, and planning sectors, showcasing the practical, real-world application of advanced data science concepts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white mt-24">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
+            <p>Climate Intelligence System Project</p>
+            <p class="text-sm text-gray-400">Waqar Nadeem (24K-2524), Nafees (24K-2526) & Azfar (24K-2576)</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const appData = {
+                impact: [
+                    { id: 'agri', title: 'Agriculture', icon: '🌿', details: 'Accurate climate predictions enable farmers to optimize planting schedules and irrigation, which is projected to <strong class="stat-highlight">reduce annual crop losses by 15-20%</strong>.' },
+                    { id: 'safety', title: 'Public Safety', icon: '🛡️', details: 'Early detection of extreme weather allows for timely evacuations and efficient resource allocation, <strong class="stat-highlight">saving lives and minimizing infrastructure damage</strong>.' },
+                    { id: 'urban', title: 'Urban Planning', icon: '🏙️', details: 'Long-term trend analysis supports major infrastructure development decisions, ensuring systems like drainage and building codes are <strong class="stat-highlight">adapted to changing climate conditions</strong>.' },
+                    { id: 'energy', title: 'Energy Management', icon: '💡', details: 'Precise forecasts allow power companies to <strong class="stat-highlight">optimize energy distribution</strong> and better plan for renewable energy generation, improving grid stability.' }
+                ],
+                methodology: [
+                    { id: 'collect', title: 'Data Collection', details: 'Automated API calls collect real-time data from OpenWeatherMap, with error handling to ensure data continuity.' },
+                    { id: 'preprocess', title: 'Data Preprocessing', details: 'Using pandas and NumPy, we handle missing values, remove outliers, standardize features, and engineer crucial temporal features for modeling.' },
+                    { id: 'eda', title: 'Exploratory Data Analysis', details: 'Statistical analysis and visualization are performed to identify significant correlations, underlying trends, and seasonal patterns in the data.' },
+                    { id: 'develop', title: 'Model Development', details: 'We train and compare multiple algorithms including Random Forest, XGBoost, and LSTM networks, with hyperparameter tuning to optimize performance.' },
+                    { id: 'evaluate', title: 'Model Evaluation', details: 'Performance is rigorously assessed using metrics like RMSE and MAE for regression, and Accuracy, Precision, and Recall for classification tasks.' }
+                ],
+                mlModels: [
+                    { name: 'Random Forest & XGBoost', desc: 'Powerful ensemble methods for feature importance and robust predictions.' },
+                    { name: 'LSTM Networks', desc: 'Deep learning models ideal for capturing long-term temporal dependencies in time-series data.' }
+                ],
+                datasetSummary: [
+                    { label: 'Source', value: 'OpenWeatherMap API' },
+                    { label: 'Type', value: 'Time-series, Historical & Real-time' },
+                    { label: 'Size', value: '10k - 50k observations' },
+                    { label: 'Frequency', value: 'Hourly updates' }
+                ],
+                deliverables: [
+                    { icon: '💻', text: '<strong>Python Codebase:</strong> Complete scripts for the entire data science workflow.'},
+                    { icon: '🧠', text: '<strong>Trained ML Models:</strong> Optimized models achieving performance targets.'},
+                    { icon: '📄', text: '<strong>Documentation:</strong> A comprehensive technical report detailing methodology and results.'},
+                    { icon: '📊', text: '<strong>Presentation:</strong> A final project demonstration showcasing key findings.'}
+                ],
+                explorerData: {
+                    labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                    temperature: Array.from({ length: 24 }, () => 15 + Math.random() * 10),
+                    humidity: Array.from({ length: 24 }, () => 40 + Math.random() * 30),
+                    pressure: Array.from({ length: 24 }, () => 1000 + Math.random() * 20),
+                }
+            };
+            
+            function renderImpactCards() {
+                const container = document.querySelector('#impact .grid');
+                container.innerHTML = appData.impact.map(item => `
+                    <div id="card-${item.id}" class="impact-card bg-white p-6 rounded-lg shadow-md text-center" data-id="${item.id}">
+                        <div class="text-4xl mb-4">${item.icon}</div>
+                        <h3 class="text-xl font-semibold text-gray-800">${item.title}</h3>
+                    </div>
+                `).join('');
+
+                container.addEventListener('click', (e) => {
+                    const card = e.target.closest('.impact-card');
+                    if (card) {
+                        const detailContainer = document.getElementById('impact-details');
+                        const itemData = appData.impact.find(i => i.id === card.dataset.id);
+                        detailContainer.innerHTML = `<h4 class="font-bold text-xl mb-2">${itemData.title} Impact</h4><p class="text-gray-700 text-lg">${itemData.details}</p>`;
+                    }
+                });
+            }
+
+            function renderMethodology() {
+                const container = document.getElementById('method-steps');
+                let html = '';
+                appData.methodology.forEach((step, index) => {
+                    html += `<div id="step-${step.id}" class="method-step bg-white p-4 rounded-lg shadow-md w-full md:w-48 text-center" data-id="${step.id}">
+                                <div class="font-bold text-lg">${index + 1}. ${step.title}</div>
+                            </div>`;
+                    if (index < appData.methodology.length - 1) {
+                        html += `<div class="text-2xl font-light text-gray-400 mx-2 hidden md:block">→</div>`;
+                    }
+                });
+                container.innerHTML = html;
+                
+                container.addEventListener('click', (e) => {
+                    const stepEl = e.target.closest('.method-step');
+                    if (stepEl) {
+                        document.querySelectorAll('.method-step').forEach(el => el.classList.remove('active'));
+                        stepEl.classList.add('active');
+
+                        const stepData = appData.methodology.find(s => s.id === stepEl.dataset.id);
+                        const detailContainer = document.getElementById('method-details');
+                        detailContainer.innerHTML = `<h4 class="font-bold text-xl mb-2">${stepData.title}</h4><p class="text-gray-700 text-lg">${stepData.details}</p>`;
+                    }
+                });
+            }
+
+            function renderLists() {
+                const mlList = document.getElementById('ml-models');
+                mlList.innerHTML = appData.mlModels.map(m => `
+                    <li class="flex items-start">
+                        <span class="text-blue-500 mr-2">✓</span>
+                        <div><strong>${m.name}:</strong> ${m.desc}</div>
+                    </li>
+                `).join('');
+
+                const datasetList = document.getElementById('dataset-summary');
+                datasetList.innerHTML = appData.datasetSummary.map(item => `
+                    <li><strong>${item.label}:</strong> ${item.value}</li>
+                `).join('');
+
+                const deliverablesList = document.getElementById('deliverables-list');
+                deliverablesList.innerHTML = appData.deliverables.map(item => `
+                    <li class="flex items-center">
+                        <span class="text-2xl mr-4">${item.icon}</span>
+                        <p class="text-gray-600">${item.text}</p>
+                    </li>
+                `).join('');
+            }
+            
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#333',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                    }
+                },
+            };
+
+            function createPerformanceCharts() {
+                new Chart('accuracyChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Target Accuracy', 'Remaining'],
+                        datasets: [{
+                            data: [85, 15],
+                            backgroundColor: ['#007BA7', '#E0E7FF'],
+                            borderColor: '#FDFBF8',
+                            borderWidth: 4,
+                        }]
+                    },
+                    options: {...chartOptions, cutout: '70%', plugins: { ...chartOptions.plugins, tooltip: { callbacks: { label: (c) => ` >${c.raw}%` } } }}
+                });
+
+                new Chart('errorChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Max Error', ''],
+                        datasets: [{
+                            data: [2, 8],
+                            backgroundColor: ['#007BA7', '#E0E7FF'],
+                            borderColor: '#FDFBF8',
+                            borderWidth: 4,
+                        }]
+                    },
+                    options: {...chartOptions, cutout: '70%', plugins: { ...chartOptions.plugins, tooltip: { callbacks: { label: (c) => ` <${c.raw}°C` } } }}
+                });
+            }
+            
+            function createDataQualityChart() {
+                new Chart('dataQualityChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Valid Data', 'Missing Values', 'Outliers/Errors'],
+                        datasets: [{
+                            data: [90, 8, 2],
+                            backgroundColor: ['#007BA7', '#FBBF24', '#F87171'],
+                            borderColor: '#fff',
+                            borderWidth: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right' } }
+                    }
+                });
+            }
+
+            let explorerChartInstance;
+            function createExplorerChart() {
+                const ctx = document.getElementById('explorerChart').getContext('2d');
+                explorerChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: appData.explorerData.labels,
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: appData.explorerData.temperature,
+                            borderColor: '#007BA7',
+                            backgroundColor: 'rgba(0, 123, 167, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: false } },
+                        plugins: { legend: { display: true } }
+                    }
+                });
+
+                document.getElementById('feature-select').addEventListener('change', (e) => {
+                    const feature = e.target.value;
+                    let newLabel, newData;
+                    
+                    switch(feature) {
+                        case 'humidity':
+                            newLabel = 'Humidity (%)';
+                            newData = appData.explorerData.humidity;
+                            break;
+                        case 'pressure':
+                            newLabel = 'Pressure (hPa)';
+                            newData = appData.explorerData.pressure;
+                            break;
+                        default:
+                            newLabel = 'Temperature (°C)';
+                            newData = appData.explorerData.temperature;
+                    }
+
+                    explorerChartInstance.data.datasets[0].label = newLabel;
+                    explorerChartInstance.data.datasets[0].data = newData;
+                    explorerChartInstance.update();
+                });
+            }
+
+            function setupNavObserver() {
+                const sections = document.querySelectorAll('main section');
+                const navLinks = document.querySelectorAll('header nav a');
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            navLinks.forEach(link => {
+                                link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                            });
+                        }
+                    });
+                }, { rootMargin: '-50% 0px -50% 0px' });
+
+                sections.forEach(section => observer.observe(section));
+            }
+            
+            renderImpactCards();
+            renderMethodology();
+            renderLists();
+            createPerformanceCharts();
+            createDataQualityChart();
+            createExplorerChart();
+            setupNavObserver();
+        });
+    </script>
+</body>
+</html>
