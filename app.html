@@ -1,0 +1,2662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karachi Weather Prediction System v3.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #004F71;
+            --secondary: #007BA7;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --background: #FDFBF8;
+            --surface: #ffffff;
+            --surface-light: #f8fdff;
+            --text: #333333;
+            --text-muted: #666666;
+            --shadow: rgba(0, 79, 113, 0.08);
+            --card-border: #E0E7FF;
+            --gradient-start: #004F71;
+            --gradient-end: #007BA7;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            background-image: 
+                url('https://images.unsplash.com/photo-1599733687773-14a88ae61690?auto=format&fit=crop&w=1920&q=80'),
+                url('https://images.unsplash.com/photo-1580193813605-a5c78b4ee01a?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover, 100% 100%;
+            background-position: center, bottom;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            letter-spacing: -0.025em;
+        }
+
+        /* Overlay for better readability */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.75) 0%,
+                rgba(255, 255, 255, 0.65) 50%,
+                rgba(255, 255, 255, 0.55) 100%
+            );
+            backdrop-filter: blur(5px);
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+            border-radius: 100px;
+            animation: float 20s infinite ease-in-out;
+            box-shadow: 
+                0 8px 16px var(--shadow),
+                inset 0 -5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 5px 15px rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .cloud1 { width: 120px; height: 45px; top: 15%; left: -120px; animation-delay: 0s; animation-duration: 28s; }
+        .cloud2 { width: 180px; height: 60px; top: 35%; left: -180px; animation-delay: 6s; animation-duration: 32s; }
+        .cloud3 { width: 150px; height: 50px; top: 65%; left: -150px; animation-delay: 12s; animation-duration: 30s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); opacity: 0; }
+            20% { opacity: 1; }
+            50% { transform: translate(55vw, -20px) scale(1.1); }
+            80% { opacity: 1; }
+            100% { transform: translate(110vw, 0) scale(1); opacity: 0; }
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+            letter-spacing: -0.05em;
+        }
+
+        .header-title::after {
+            content: '🌤️';
+            font-size: 3rem;
+            position: absolute;
+            top: -15px;
+            right: -50px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(74, 144, 226, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(74, 144, 226, 0.8)); }
+        }
+
+        .header-subtitle {
+            color: var(--text);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .accuracy-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            margin-top: 1.5rem;
+            font-weight: 600;
+            color: white;
+            animation: pulse 2s infinite;
+            box-shadow: 0 8px 20px rgba(0, 79, 113, 0.15);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px var(--shadow), 
+                       0 12px 24px rgba(0, 79, 113, 0.06);
+            border: 1px solid var(--card-border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.1;
+            border-radius: 0 16px 0 100%;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .weather-display.card::before {
+            width: 200px;
+            height: 200px;
+            opacity: 0.15;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Current Weather Display */
+        .weather-display {
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .temperature-main {
+            font-size: 6rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin: 1rem 0;
+            position: relative;
+            display: inline-block;
+            animation: tempFloat 3s ease-in-out infinite;
+        }
+
+        .temperature-main::after {
+            content: attr(data-temp);
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: var(--warning);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        @keyframes tempFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .weather-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--surface);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 15px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .stat-item:hover::before {
+            opacity: 1;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-top: 0.5rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover .card-icon {
+            transform: scale(1.2);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 1rem;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 220px;
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 79, 113, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: -0.025em;
+        }
+
+        .btn i {
+            font-size: 1.4rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover i {
+            transform: translateX(5px);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-success { 
+            background-color: #2ecc71; 
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-warning { 
+            background-color: #f39c12;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-danger { 
+            background-color: #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-success:hover { box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); }
+        .btn-warning:hover { box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4); }
+        .btn-danger:hover { box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4); }
+
+        /* Forecast List */
+        .forecast-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .forecast-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .forecast-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .forecast-time {
+            font-weight: 600;
+            color: var(--info);
+        }
+
+        .forecast-temp {
+            font-size: 1.5rem;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .forecast-temp .predicted {
+            display: block;
+        }
+
+        .actual-temp {
+            font-size: 0.8rem;
+            display: block;
+            margin-top: 0.3rem;
+        }
+
+        .actual-temp i {
+            margin-right: 0.3rem;
+        }
+
+        .high-accuracy {
+            color: var(--success);
+        }
+
+        .medium-accuracy {
+            color: var(--warning);
+        }
+
+        .low-accuracy {
+            color: var(--danger);
+        }
+
+        .forecast-icon {
+            font-size: 1.8rem;
+            margin: 0 1rem;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border: 5px solid rgba(78, 205, 196, 0.2);
+            border-top: 5px solid var(--info);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Map Container */
+        .map-container {
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .area-marker {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, var(--info), transparent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            animation: markerPulse 2s infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .area-marker:hover {
+            transform: scale(1.3);
+            z-index: 10;
+        }
+
+        @keyframes markerPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(78, 205, 196, 0); }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notification.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-title { font-size: 1.8rem; }
+            .temperature-main { font-size: 4rem; }
+            .dashboard { grid-template-columns: 1fr; }
+            .btn { min-width: 100%; }
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--info), var(--primary));
+            transition: width 0.3s ease;
+            animation: progressGlow 2s infinite;
+        }
+
+        @keyframes progressGlow {
+            0%, 100% { box-shadow: 0 0 10px var(--info); }
+            50% { box-shadow: 0 0 20px var(--info); }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface-light);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* ==========================================
+           DETAILED FORECAST STYLES
+           ========================================== */
+        
+        .detailed-forecast-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 16px;
+        }
+        
+        .detailed-forecast-header h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        
+        .area-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+        
+        .area-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .area-stats .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .area-stats .label {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+        
+        .area-stats .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .detailed-forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .forecast-hour-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .forecast-hour-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .forecast-hour-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hour-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        
+        .hour-header .time {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+        
+        .weather-icon {
+            font-size: 1.5rem;
+        }
+        
+        .temperature {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+        
+        .temp-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+        }
+        
+        .feels-like {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 0.2rem;
+        }
+        
+        .conditions {
+            text-align: center;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .hour-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.3rem;
+            background: var(--background);
+            border-radius: 6px;
+        }
+        
+        .detail-item .icon {
+            font-size: 1rem;
+        }
+        
+        .detail-item .value {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .forecast-summary {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+        
+        .forecast-summary h3 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .summary-item .label {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        .summary-item .value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Area Map Styles */
+        .area-map-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .area-map-header h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+        
+        .area-map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .area-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .area-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(46, 134, 171, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .area-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(46, 134, 171, 0.2);
+        }
+        
+        .area-card:hover::before {
+            left: 100%;
+        }
+        
+        .area-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .area-temp {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .area-coords {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+        }
+        
+        .area-click-hint {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .map-legend {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+        
+        .map-legend h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.8rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .temp-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .temp-indicator.hot {
+            background: #ff4444;
+        }
+        
+        .temp-indicator.warm {
+            background: #ff8800;
+        }
+        
+        .temp-indicator.pleasant {
+            background: #44aa44;
+        }
+        
+        .temp-indicator.mild {
+            background: #4488ff;
+        }
+        
+        /* Responsive Design for Detailed Forecast */
+        @media (max-width: 768px) {
+            .detailed-forecast-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .area-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .area-map-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .legend-items {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==========================================
+           SAFETY AI STYLES
+           ========================================== */
+        
+        .safety-ai-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .safety-ai-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .safety-ai-avatar {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .avatar-circle {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+            position: relative;
+            z-index: 3;
+            animation: avatarFloat 3s ease-in-out infinite;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border: 3px solid #4ECDC4;
+            border-radius: 50%;
+            animation: pulse 2s ease-out infinite;
+        }
+        
+        .pulse-ring.delay-1 {
+            animation-delay: 0.5s;
+        }
+        
+        .pulse-ring.delay-2 {
+            animation-delay: 1s;
+        }
+        
+        @keyframes avatarFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .safety-ai-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: titleSlideIn 1s ease-out;
+        }
+        
+        .safety-ai-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            animation: subtitleFadeIn 1s ease-out 0.3s both;
+        }
+        
+        .welcome-message {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(68, 160, 141, 0.1));
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(78, 205, 196, 0.2);
+            animation: messageSlideUp 1s ease-out 0.6s both;
+        }
+        
+        .welcome-message p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text);
+            margin: 0;
+        }
+        
+        @keyframes titleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes subtitleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes messageSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .safety-ai-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .safety-nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .safety-nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .safety-nav-btn:hover {
+            transform: translateY(-3px);
+            border-color: #4ECDC4;
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.2);
+        }
+        
+        .safety-nav-btn:hover::before {
+            left: 100%;
+        }
+        
+        .safety-nav-btn.active {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            border-color: #4ECDC4;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.3);
+        }
+        
+        .safety-nav-btn i {
+            font-size: 1.5rem;
+        }
+        
+        .safety-nav-btn span {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .safety-ai-content {
+            min-height: 400px;
+        }
+        
+        /* Welcome Content Styles */
+        .quick-tips-section, .features-section {
+            margin-bottom: 3rem;
+        }
+        
+        .tips-grid, .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .tip-card, .feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tip-card::before, .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+        }
+        
+        .tip-card:hover, .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tip-icon, .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tip-card p {
+            margin: 0;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        .feature-card span {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .safety-ai-cta {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.05), rgba(68, 160, 141, 0.05));
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(78, 205, 196, 0.1);
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Travel Guide Styles */
+        .travel-sections {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .travel-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .travel-section h3 {
+            color: #4ECDC4;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .tips-list {
+            display: grid;
+            gap: 0.8rem;
+        }
+        
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: var(--background);
+            border-radius: 8px;
+        }
+        
+        .tip-bullet {
+            color: #4ECDC4;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Emergency Guide Styles */
+        .emergency-contacts {
+            margin-bottom: 2rem;
+        }
+        
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .contact-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-card:hover {
+            border-color: #4ECDC4;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.2);
+        }
+        
+        .contact-service {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4ECDC4;
+            margin-bottom: 1rem;
+        }
+        
+        .preparation-checklist, .weather-emergencies {
+            margin-bottom: 2rem;
+        }
+        
+        .checklist-items {
+            display: grid;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem;
+            background: var(--background);
+            border-radius: 8px;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4ECDC4;
+        }
+        
+        .checklist-item label {
+            cursor: pointer;
+            color: var(--text);
+        }
+        
+        /* Weather Safety Styles */
+        .current-weather-card {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        
+        .weather-temp {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .weather-desc {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .weather-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .recommendations-list {
+            display: grid;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .recommendation-item {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(68, 160, 141, 0.1));
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #4ECDC4;
+        }
+        
+        .weather-condition {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .weather-condition h4 {
+            color: #4ECDC4;
+            margin-bottom: 1rem;
+        }
+        
+        .condition-tips {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .condition-tip {
+            padding: 0.5rem 0;
+            color: var(--text);
+        }
+        
+        /* Checklist Styles */
+        .checklist-sections {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .checklist-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .checklist-section h3 {
+            color: #4ECDC4;
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive Design for Safety AI */
+        @media (max-width: 768px) {
+            .safety-ai-navigation {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .safety-nav-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .tips-grid, .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .safety-ai-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1 class="header-title">🌤️ KARACHI WEATHER PREDICTION SYSTEM</h1>
+        <p class="header-subtitle">Real-Time | AI-Powered | HD Visualizations</p>
+        <div class="accuracy-badge">High Accuracy Guaranteed</div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Current Weather Display -->
+        <div class="card weather-display">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🌍</span> LIVE WEATHER</h2>
+                <span id="lastUpdate" class="text-muted">--</span>
+            </div>
+            <div id="weatherCondition" class="text-xl font-semibold text-gray-600 mb-4">Clear Sky</div>
+            <div class="temperature-main" id="currentTemp">--°C</div>
+            <div class="weather-stats">
+                <div class="stat-item tooltip" data-tooltip="Current humidity level">
+                    <span class="card-icon" role="img" aria-label="Humidity">💧</span>
+                    <span class="stat-value" id="humidity" aria-live="polite">--%</span>
+                    <span class="stat-label">Humidity</span>
+                </div>
+                <div class="stat-item tooltip" data-tooltip="Atmospheric pressure">
+                    <span class="card-icon" role="img" aria-label="Pressure">🔽</span>
+                    <span class="stat-value" id="pressure" aria-live="polite">-- mb</span>
+                    <span class="stat-label">Pressure</span>
+                </div>
+                <div class="stat-item tooltip" data-tooltip="Wind speed">
+                    <span class="card-icon" role="img" aria-label="Wind">💨</span>
+                    <span class="stat-value" id="windSpeed" aria-live="polite">-- m/s</span>
+                    <span class="stat-label">Wind Speed</span>
+                </div>
+                <div class="stat-item tooltip" data-tooltip="Precipitation amount">
+                    <span class="card-icon" role="img" aria-label="Rain">☔</span>
+                    <span class="stat-value" id="precipitation" aria-live="polite">-- mm</span>
+                    <span class="stat-label">Rainfall</span>
+                </div>
+                <div class="stat-item tooltip" data-tooltip="Cloud coverage">
+                    <span class="card-icon" role="img" aria-label="Clouds">☁️</span>
+                    <span class="stat-value" id="cloudCover" aria-live="polite">--%</span>
+                    <span class="stat-label">Cloud Cover</span>
+                </div>
+                <div class="stat-item tooltip" data-tooltip="Apparent temperature">
+                    <span class="card-icon" role="img" aria-label="Feels like temperature">🌡️</span>
+                    <span class="stat-value" id="feelsLike" aria-live="polite">--°C</span>
+                    <span class="stat-label">Feels Like</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="btn-group" role="group" aria-label="Weather control actions">
+            <button class="btn" onclick="fetchRealTimeWeather()" aria-label="Update weather data">
+                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                <span>Update Weather</span>
+            </button>
+            <button class="btn btn-success" onclick="trainModel()" aria-label="Train AI prediction model">
+                <i class="fas fa-brain" aria-hidden="true"></i>
+                <span>Train AI Model</span>
+            </button>
+            <button class="btn btn-warning" onclick="predict24Hours()" aria-label="Generate 24 hour forecast">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>24-Hour Forecast</span>
+            </button>
+            <button class="btn btn-danger" onclick="showAreaMap()" aria-label="Show area temperature map">
+                <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+                <span>Area Map</span>
+            </button>
+            <button class="btn btn-info" onclick="showSafetyAI()" aria-label="Open Safety AI for FAST students">
+                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                <span>Safety AI</span>
+            </button>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard">
+            <!-- 24-Hour Forecast -->
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h2 class="card-title"><span class="card-icon">📈</span> 24-HOUR FORECAST</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+                <div class="forecast-list" id="forecastList"></div>
+            </div>
+
+            <!-- Model Performance -->
+            <div class="card" role="region" aria-labelledby="metricsTitle">
+                <div class="card-header">
+                    <h2 class="card-title" id="metricsTitle"><span class="card-icon" role="img" aria-hidden="true">🎯</span> MODEL METRICS</h2>
+                </div>
+                <div class="stat-item" role="group" aria-labelledby="r2Label">
+                    <span class="stat-label" id="r2Label">R² Score</span>
+                    <span class="stat-value" id="r2Score" aria-live="polite" aria-label="R squared score">--</span>
+                    <div class="progress-bar" role="progressbar" aria-labelledby="r2Label">
+                        <div class="progress-fill" id="r2Progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-item" role="group" aria-labelledby="rmseLabel">
+                    <span class="stat-label" id="rmseLabel">RMSE (Root Mean Square Error)</span>
+                    <span class="stat-value" id="rmse" aria-live="polite" aria-label="Root mean square error">--°C</span>
+                </div>
+                <div class="stat-item" role="group" aria-labelledby="maeLabel">
+                    <span class="stat-label" id="maeLabel">MAE (Mean Absolute Error)</span>
+                    <span class="stat-value" id="mae" aria-live="polite" aria-label="Mean absolute error">--°C</span>
+                </div>
+                <div class="stat-item" role="group" aria-labelledby="accuracyLabel">
+                    <span class="stat-label" id="accuracyLabel">Accuracy within ±0.5°C</span>
+                    <span class="stat-value" id="accuracy" aria-live="polite" aria-label="Prediction accuracy">--%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Animation -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing weather data...</p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global variables
+        let forecastChart = null;
+        let lastWeatherData = null;
+        const API_BASE = ''; // Use relative path for production
+
+        // Fetch real-time weather
+        async function fetchRealTimeWeather() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/weather/current`);
+                const data = await response.json();
+                
+                lastWeatherData = {
+                    ...data,
+                    timestamp: new Date().toISOString() // Use current time for accurate updates
+                };
+                updateWeatherDisplay(lastWeatherData);
+                showNotification('✅ Weather data updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error fetching real-time weather:', error);
+                showNotification('❌ Failed to fetch weather data. Displaying last known or mock data.', 'error');
+                // The backend provides mock data on failure, so we just need to update the display
+                // If the fetch fails completely, the UI will show '--' if lastWeatherData is null.
+                console.log("Displaying last known data or backend fallback.");
+            }
+            showLoading(false);
+        }
+
+        // Update weather display
+        function updateWeatherDisplay(data) {
+            if (!data) {
+                console.error('No weather data provided to updateWeatherDisplay');
+                return;
+            }
+
+            const elements = {
+                currentTemp: document.getElementById('currentTemp'),
+                humidity: document.getElementById('humidity'),
+                pressure: document.getElementById('pressure'),
+                windSpeed: document.getElementById('windSpeed'),
+                precipitation: document.getElementById('precipitation'),
+                cloudCover: document.getElementById('cloudCover'),
+                feelsLike: document.getElementById('feelsLike'),
+                weatherCondition: document.getElementById('weatherCondition'),
+                lastUpdate: document.getElementById('lastUpdate')
+            };
+
+            // Check if all required elements exist
+            const missingElements = Object.entries(elements)
+                .filter(([name, element]) => !element)
+                .map(([name]) => name);
+
+            if (missingElements.length > 0) {
+                console.error('Missing DOM elements:', missingElements);
+                return;
+            }
+
+            const prevTemp = parseFloat(elements.currentTemp.textContent) || 0;
+
+            try {
+                elements.currentTemp.textContent = `${data.temperature?.toFixed(1) ?? '--'}°C`;
+                elements.humidity.textContent = `${data.humidity?.toFixed(0) ?? '--'}%`;
+                elements.pressure.textContent = `${data.pressure?.toFixed(1) ?? '--'} mb`;
+                elements.windSpeed.textContent = `${data.wind_speed?.toFixed(1) ?? '--'} m/s`;
+                elements.precipitation.textContent = `${data.precipitation?.toFixed(2) ?? '--'} mm`;
+                elements.cloudCover.textContent = `${data.cloud_cover?.toFixed(0) ?? '--'}%`;
+                elements.feelsLike.textContent = `${data.feels_like?.toFixed(1) ?? '--'}°C`;
+                elements.weatherCondition.textContent = data.description || 'Clear Sky';
+                elements.lastUpdate.textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+                
+                // Animate temperature only if it changed
+                if (Math.abs(prevTemp - data.temperature) > 0.1) {
+                    animateValue('currentTemp', prevTemp, data.temperature, 1000);
+                }
+            } catch (error) {
+                console.error('Error updating weather display:', error);
+                showNotification('Error updating weather display', 'error');
+            }
+        }
+
+        // Train model
+        async function trainModel() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/model/train`, { method: 'POST' });
+                const data = await response.json();
+                
+                updateModelMetrics(data.metrics);
+                showNotification('✅ Model trained successfully!', 'success');
+            } catch (trainError) {
+                console.error('Error training model:', trainError);
+                showNotification('❌ Training failed', 'error');
+                // The backend now returns demo metrics on failure, so no need for frontend fallback.
+            }
+            showLoading(false);
+        }
+
+        // Update model metrics
+        function updateModelMetrics(metrics) {
+            document.getElementById('r2Score').textContent = (metrics.R2 * 100).toFixed(2) + '%';
+            document.getElementById('r2Progress').style.width = (metrics.R2 * 100) + '%';
+            document.getElementById('rmse').textContent = metrics.RMSE.toFixed(4) + '°C';
+            document.getElementById('mae').textContent = metrics.MAE.toFixed(4) + '°C';
+            document.getElementById('accuracy').textContent = metrics.within_half.toFixed(1) + '%';
+        }
+
+        // 24-hour forecast
+        async function predict24Hours() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/forecast/24h`);
+                const data = await response.json();
+                if (!data.predictions) throw new Error("Forecast data is missing.");
+                
+                updateForecastChart(data.predictions);
+                updateForecastList(data.predictions);
+                showNotification('✅ Forecast generated!', 'success');
+            } catch (error) {
+                console.error('Error fetching forecast:', error);
+                showNotification('❌ Failed to generate forecast.', 'error');
+            }
+            showLoading(false);
+        }
+
+        // Generic API fetch helper
+        async function fetchAPI(endpoint, options = {}) {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching from ${endpoint}:`, error);
+                showNotification(`❌ Failed to fetch data from ${endpoint}`, 'error');
+                return null;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Update forecast chart
+        function updateForecastChart(predictions) {
+            const canvas = document.getElementById('tempChart');
+            if (!canvas) {
+                console.error('Could not find chart canvas element');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get 2d context from canvas');
+                return;
+            }
+            
+            if (forecastChart) {
+                try {
+                    forecastChart.destroy();
+                } catch (error) {
+                    console.error('Error destroying previous chart:', error);
+                }
+            }
+
+            const labels = predictions.map(p => p.time);
+            const temps = predictions.map(p => p.temp);
+
+            forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: temps,
+                        borderColor: '#4ECDC4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#4ECDC4',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(28, 37, 65, 0.95)',
+                            titleColor: '#4ECDC4',
+                            bodyColor: '#E8F1F2',
+                            borderColor: '#4ECDC4',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#A8B4C0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#A8B4C0', maxRotation: 45 },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update forecast list with verification
+        function updateForecastList(predictions) {
+            const list = document.getElementById('forecastList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            predictions.slice(0, 8).forEach(pred => {
+                const item = document.createElement('div');
+                item.className = 'forecast-item';
+
+                item.innerHTML = `
+                    <span class="forecast-time" aria-label="Forecast time: ${pred.time}">${pred.time}</span>
+                    <span class="forecast-icon" aria-label="Weather condition: ${pred.conditions || ''}">${pred.icon}</span>
+                    <span class="forecast-temp">
+                        <span class="predicted" aria-label="Predicted temperature: ${pred.temp.toFixed(1)}°C">${pred.temp.toFixed(1)}°C</span>
+                    </span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Show area map
+        async function showAreaMap() {
+            const data = await fetchAPI('/api/forecast/areas');
+            if (!data || !data.areas) {
+                showNotification('❌ Could not load area data.', 'error');
+                return;
+            }
+
+            const modalContent = document.getElementById('modalContent');
+            let markersHTML = '';
+            const areaEntries = Object.entries(data.areas);
+
+            // Simple positioning logic for markers based on lat/lon
+            const lons = areaEntries.map(([_, v]) => v.lon);
+            const lats = areaEntries.map(([_, v]) => v.lat);
+            const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+            const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+
+            areaEntries.forEach(([area, details]) => {
+                const left = ((details.lon - minLon) / (maxLon - minLon)) * 80 + 10; // % position
+                const top = 100 - (((details.lat - minLat) / (maxLat - minLat)) * 80 + 10); // % position
+
+                markersHTML += `
+                    <div class="area-marker" style="top: ${top}%; left: ${left}%;" onclick="showAreaDetails('${area}')" title="${area}: ${details.temp.toFixed(1)}°C">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.2rem;">${details.temp.toFixed(1)}°C</div>
+                            <div style="font-size: 0.7rem;">${area.split(' ')[0]}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            modalContent.innerHTML = `
+                <h2 style="margin-bottom: 2rem;"><span style="font-size: 2rem;">🗺️</span> AREA-WISE TEMPERATURE MAP</h2>
+                <div class="map-container" style="height: 500px; position: relative;">
+                    ${markersHTML}
+                </div>
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(78, 205, 196, 0.1); border-radius: 10px;">
+                    <p style="text-align: center; color: var(--text-muted);">
+                        Click on any area marker to view detailed forecast
+                    </p>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        // Show area details
+        function showAreaDetails(area) {
+            showNotification(`📍 ${area} - Detailed forecast coming soon!`, 'info');
+        }
+
+        // Show loading
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? 'var(--success)' : 
+                                          type === 'error' ? 'var(--danger)' : 
+                                          type === 'warning' ? 'var(--warning)' : 
+                                          'var(--info)';
+            notification.classList.add('active');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Animate value
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            if (!element) return;
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = `${current.toFixed(1)}°C`;
+            }, 16);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            fetchRealTimeWeather();
+            
+            // Auto-refresh every 30 minutes
+            setInterval(fetchRealTimeWeather, 1800000);
+        });
+
+        // Close modal on outside click
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('modal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // ==========================================
+        // DETAILED AREA FORECAST FUNCTIONALITY
+        // ==========================================
+        
+        let currentAreaForecast = null;
+        
+        // Show detailed area forecast
+        async function showDetailedAreaForecast(areaName) {
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`/api/forecast/area/${encodeURIComponent(areaName)}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch area forecast');
+                }
+                
+                currentAreaForecast = data;
+                displayDetailedForecast(data);
+                showNotification(`Detailed forecast loaded for ${areaName}`, 'success');
+                
+            } catch (error) {
+                console.error('Error fetching detailed forecast:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display detailed forecast in modal
+        function displayDetailedForecast(data) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            
+            const { area_info, forecast } = data;
+            
+            modalContent.innerHTML = `
+                <div class="detailed-forecast-header">
+                    <h2>📍 ${area_info.name} - Detailed Forecast</h2>
+                    <p class="area-description">${area_info.characteristics.description}</p>
+                    <div class="area-stats">
+                        <div class="stat">
+                            <span class="label">Coordinates:</span>
+                            <span class="value">${area_info.coordinates.lat.toFixed(4)}°N, ${area_info.coordinates.lon.toFixed(4)}°E</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">Urban Density:</span>
+                            <span class="value">${(area_info.characteristics.urban_density * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">Coastal Proximity:</span>
+                            <span class="value">${(area_info.characteristics.coastal_proximity * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detailed-forecast-grid">
+                    ${forecast.map(hour => `
+                        <div class="forecast-hour-card">
+                            <div class="hour-header">
+                                <span class="time">${hour.time}</span>
+                                <span class="weather-icon">${hour.icon}</span>
+                            </div>
+                            <div class="temperature">
+                                <span class="temp-value">${hour.temperature}°C</span>
+                                <span class="feels-like">Feels like ${hour.feels_like}°C</span>
+                            </div>
+                            <div class="conditions">${hour.conditions}</div>
+                            <div class="hour-details">
+                                <div class="detail-item">
+                                    <span class="icon">💧</span>
+                                    <span class="value">${hour.humidity}%</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="icon">💨</span>
+                                    <span class="value">${hour.wind_speed} km/h</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="icon">📊</span>
+                                    <span class="value">${hour.pressure} hPa</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="icon">☀️</span>
+                                    <span class="value">UV ${hour.uv_index}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="icon">🌫️</span>
+                                    <span class="value">AQI ${hour.aqi}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="forecast-summary">
+                    <h3>📊 24-Hour Summary</h3>
+                    <div class="summary-stats">
+                        <div class="summary-item">
+                            <span class="label">Max Temperature:</span>
+                            <span class="value">${Math.max(...forecast.map(h => h.temperature)).toFixed(1)}°C</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Min Temperature:</span>
+                            <span class="value">${Math.min(...forecast.map(h => h.temperature)).toFixed(1)}°C</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Average Humidity:</span>
+                            <span class="value">${(forecast.reduce((sum, h) => sum + h.humidity, 0) / forecast.length).toFixed(1)}%</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Peak UV Index:</span>
+                            <span class="value">${Math.max(...forecast.map(h => h.uv_index))}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+        
+        // Enhanced area map with clickable areas
+        async function showAreaMap() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('/api/forecast/areas');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch area data');
+                }
+                
+                displayAreaMap(data.areas);
+                showNotification('Area map loaded successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching area map:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display area map with clickable areas
+        function displayAreaMap(areas) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.innerHTML = `
+                <div class="area-map-header">
+                    <h2>🗺️ Karachi Area Weather Map</h2>
+                    <p>Click on any area to view detailed forecast</p>
+                </div>
+                
+                <div class="area-map-grid">
+                    ${Object.entries(areas).map(([areaName, data]) => `
+                        <div class="area-card" onclick="showDetailedAreaForecast('${areaName}')">
+                            <div class="area-name">${areaName}</div>
+                            <div class="area-temp">${data.temp.toFixed(1)}°C</div>
+                            <div class="area-coords">
+                                ${data.lat.toFixed(4)}°N, ${data.lon.toFixed(4)}°E
+                            </div>
+                            <div class="area-click-hint">Click for details →</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="map-legend">
+                    <h4>Legend:</h4>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="temp-indicator hot"></span>
+                            <span>Hot (35°C+)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="temp-indicator warm"></span>
+                            <span>Warm (30-35°C)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="temp-indicator pleasant"></span>
+                            <span>Pleasant (25-30°C)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="temp-indicator mild"></span>
+                            <span>Mild (<25°C)</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        // ==========================================
+        // SAFETY AI FOR FAST STUDENTS
+        // ==========================================
+        
+        let currentSafetySection = 'welcome';
+        
+        // Show Safety AI page
+        async function showSafetyAI() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('/api/safety-ai/welcome');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load Safety AI');
+                }
+                
+                displaySafetyAI(data);
+                showNotification('Safety AI loaded successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error loading Safety AI:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display Safety AI with animations
+        function displaySafetyAI(data) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.innerHTML = `
+                <div class="safety-ai-container">
+                    <div class="safety-ai-header">
+                        <div class="safety-ai-avatar">
+                            <div class="avatar-circle">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring delay-1"></div>
+                            <div class="pulse-ring delay-2"></div>
+                        </div>
+                        <h1 class="safety-ai-title">${data.title}</h1>
+                        <p class="safety-ai-subtitle">${data.subtitle}</p>
+                        <div class="welcome-message">
+                            <p>${data.welcome_message}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="safety-ai-navigation">
+                        <button class="safety-nav-btn active" onclick="loadSafetySection('welcome')">
+                            <i class="fas fa-home"></i>
+                            <span>Welcome</span>
+                        </button>
+                        <button class="safety-nav-btn" onclick="loadSafetySection('travel')">
+                            <i class="fas fa-car"></i>
+                            <span>Travel Guide</span>
+                        </button>
+                        <button class="safety-nav-btn" onclick="loadSafetySection('emergency')">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Emergency</span>
+                        </button>
+                        <button class="safety-nav-btn" onclick="loadSafetySection('campus')">
+                            <i class="fas fa-university"></i>
+                            <span>Campus Safety</span>
+                        </button>
+                        <button class="safety-nav-btn" onclick="loadSafetySection('weather')">
+                            <i class="fas fa-cloud-sun"></i>
+                            <span>Weather Safety</span>
+                        </button>
+                        <button class="safety-nav-btn" onclick="loadSafetySection('checklist')">
+                            <i class="fas fa-check-square"></i>
+                            <span>Checklist</span>
+                        </button>
+                    </div>
+                    
+                    <div class="safety-ai-content" id="safetyContent">
+                        <div class="welcome-content">
+                            <div class="quick-tips-section">
+                                <h3>🚀 Quick Safety Tips</h3>
+                                <div class="tips-grid">
+                                    ${data.quick_tips.map(tip => `
+                                        <div class="tip-card">
+                                            <div class="tip-icon">🛡️</div>
+                                            <p>${tip}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="features-section">
+                                <h3>✨ Safety AI Features</h3>
+                                <div class="features-grid">
+                                    ${data.features.map(feature => `
+                                        <div class="feature-card">
+                                            <div class="feature-icon">⭐</div>
+                                            <span>${feature}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="safety-ai-cta">
+                                <h3>🎯 Get Started</h3>
+                                <p>Choose a section above to get personalized safety guidance for your university journey!</p>
+                                <div class="cta-buttons">
+                                    <button class="btn btn-primary" onclick="loadSafetySection('travel')">
+                                        <i class="fas fa-route"></i>
+                                        Start with Travel Guide
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="loadSafetySection('emergency')">
+                                        <i class="fas fa-phone"></i>
+                                        Emergency Contacts
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            
+            // Start animations
+            setTimeout(() => {
+                animateSafetyAI();
+            }, 100);
+        }
+        
+        // Load specific safety section
+        async function loadSafetySection(section) {
+            try {
+                showLoading(true);
+                
+                // Update navigation
+                document.querySelectorAll('.safety-nav-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                let response;
+                let data;
+                
+                switch(section) {
+                    case 'welcome':
+                        response = await fetch('/api/safety-ai/welcome');
+                        data = await response.json();
+                        displayWelcomeContent(data);
+                        break;
+                    case 'travel':
+                        response = await fetch('/api/safety-ai/travel-guide');
+                        data = await response.json();
+                        displayTravelGuide(data);
+                        break;
+                    case 'emergency':
+                        response = await fetch('/api/safety-ai/emergency-prep');
+                        data = await response.json();
+                        displayEmergencyGuide(data);
+                        break;
+                    case 'campus':
+                        response = await fetch('/api/safety-ai/campus-safety');
+                        data = await response.json();
+                        displayCampusSafety(data);
+                        break;
+                    case 'weather':
+                        response = await fetch('/api/safety-ai/weather-safety');
+                        data = await response.json();
+                        displayWeatherSafety(data);
+                        break;
+                    case 'checklist':
+                        response = await fetch('/api/safety-ai/personal-checklist');
+                        data = await response.json();
+                        displayPersonalChecklist(data);
+                        break;
+                }
+                
+                currentSafetySection = section;
+                
+            } catch (error) {
+                console.error('Error loading safety section:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Display welcome content
+        function displayWelcomeContent(data) {
+            const content = document.getElementById('safetyContent');
+            content.innerHTML = `
+                <div class="welcome-content">
+                    <div class="quick-tips-section">
+                        <h3>🚀 Quick Safety Tips</h3>
+                        <div class="tips-grid">
+                            ${data.quick_tips.map(tip => `
+                                <div class="tip-card">
+                                    <div class="tip-icon">🛡️</div>
+                                    <p>${tip}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="features-section">
+                        <h3>✨ Safety AI Features</h3>
+                        <div class="features-grid">
+                            ${data.features.map(feature => `
+                                <div class="feature-card">
+                                    <div class="feature-icon">⭐</div>
+                                    <span>${feature}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="safety-ai-cta">
+                        <h3>🎯 Get Started</h3>
+                        <p>Choose a section above to get personalized safety guidance for your university journey!</p>
+                        <div class="cta-buttons">
+                            <button class="btn btn-primary" onclick="loadSafetySection('travel')">
+                                <i class="fas fa-route"></i>
+                                Start with Travel Guide
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadSafetySection('emergency')">
+                                <i class="fas fa-phone"></i>
+                                Emergency Contacts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display travel guide
+        function displayTravelGuide(data) {
+            const content = document.getElementById('safetyContent');
+            content.innerHTML = `
+                <div class="travel-guide-content">
+                    <div class="section-header">
+                        <h2>${data.title}</h2>
+                        <p>${data.description}</p>
+                    </div>
+                    
+                    <div class="travel-sections">
+                        ${Object.entries(data.sections).map(([key, section]) => `
+                            <div class="travel-section">
+                                <h3>${section.title}</h3>
+                                <div class="tips-list">
+                                    ${section.tips.map(tip => `
+                                        <div class="tip-item">
+                                            <div class="tip-bullet">•</div>
+                                            <span>${tip}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display emergency guide
+        function displayEmergencyGuide(data) {
+            const content = document.getElementById('safetyContent');
+            content.innerHTML = `
+                <div class="emergency-guide-content">
+                    <div class="section-header">
+                        <h2>${data.title}</h2>
+                        <p>${data.description}</p>
+                    </div>
+                    
+                    <div class="emergency-contacts">
+                        <h3>📞 Emergency Contacts</h3>
+                        <div class="contacts-grid">
+                            ${Object.entries(data.emergency_contacts).map(([service, number]) => `
+                                <div class="contact-card">
+                                    <div class="contact-service">${service.replace('_', ' ').toUpperCase()}</div>
+                                    <div class="contact-number">${number}</div>
+                                    <button class="btn btn-sm" onclick="copyToClipboard('${number}')">Copy</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="preparation-checklist">
+                        <h3>📋 Preparation Checklist</h3>
+                        <div class="checklist-items">
+                            ${data.preparation_checklist.map(item => `
+                                <div class="checklist-item">
+                                    <input type="checkbox" id="check-${Math.random().toString(36).substr(2, 9)}">
+                                    <label for="check-${Math.random().toString(36).substr(2, 9)}">${item}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="weather-emergencies">
+                        <h3>${data.weather_emergencies.title}</h3>
+                        <div class="weather-tips">
+                            ${data.weather_emergencies.tips.map(tip => `
+                                <div class="weather-tip">${tip}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display campus safety
+        function displayCampusSafety(data) {
+            const content = document.getElementById('safetyContent');
+            content.innerHTML = `
+                <div class="campus-safety-content">
+                    <div class="section-header">
+                        <h2>${data.title}</h2>
+                        <p>${data.description}</p>
+                    </div>
+                    
+                    <div class="campus-sections">
+                        ${Object.entries(data.sections).map(([key, section]) => `
+                            <div class="campus-section">
+                                <h3>${section.title}</h3>
+                                <div class="safety-tips">
+                                    ${section.tips.map(tip => `
+                                        <div class="safety-tip">
+                                            <div class="tip-icon">🛡️</div>
+                                            <span>${tip}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display weather safety
+        function displayWeatherSafety(data) {
+            const content = document.getElementById('safetyContent');
+            const weather = data.current_weather;
+            
+            content.innerHTML = `
+                <div class="weather-safety-content">
+                    <div class="section-header">
+                        <h2>${data.title}</h2>
+                        <div class="current-weather-card">
+                            <div class="weather-info">
+                                <div class="weather-temp">${weather.temperature}°C</div>
+                                <div class="weather-desc">${weather.description}</div>
+                                <div class="weather-details">
+                                    <span>Humidity: ${weather.humidity}%</span>
+                                    <span>Wind: ${weather.wind_speed} km/h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="weather-recommendations">
+                        <h3>🎯 Personalized Recommendations</h3>
+                        <div class="recommendations-list">
+                            ${data.recommendations.map(rec => `
+                                <div class="recommendation-item">${rec}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="weather-safety-tips">
+                        <h3>🌤️ Weather Safety Tips</h3>
+                        <div class="tips-sections">
+                            ${Object.entries(data.safety_tips).map(([condition, tips]) => `
+                                <div class="weather-condition">
+                                    <h4>${condition.replace('_', ' ').toUpperCase()}</h4>
+                                    <div class="condition-tips">
+                                        ${tips.map(tip => `
+                                            <div class="condition-tip">${tip}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Display personal checklist
+        function displayPersonalChecklist(data) {
+            const content = document.getElementById('safetyContent');
+            content.innerHTML = `
+                <div class="personal-checklist-content">
+                    <div class="section-header">
+                        <h2>${data.title}</h2>
+                        <p>${data.description}</p>
+                    </div>
+                    
+                    <div class="checklist-sections">
+                        <div class="checklist-section">
+                            <h3>📅 Daily Checklist</h3>
+                            <div class="checklist-items">
+                                ${data.daily_checklist.map(item => `
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="daily-${Math.random().toString(36).substr(2, 9)}">
+                                        <label for="daily-${Math.random().toString(36).substr(2, 9)}">${item}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="checklist-section">
+                            <h3>📆 Weekly Checklist</h3>
+                            <div class="checklist-items">
+                                ${data.weekly_checklist.map(item => `
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="weekly-${Math.random().toString(36).substr(2, 9)}">
+                                        <label for="weekly-${Math.random().toString(36).substr(2, 9)}">${item}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="checklist-section">
+                            <h3>📊 Monthly Checklist</h3>
+                            <div class="checklist-items">
+                                ${data.monthly_checklist.map(item => `
+                                    <div class="checklist-item">
+                                        <input type="checkbox" id="monthly-${Math.random().toString(36).substr(2, 9)}">
+                                        <label for="monthly-${Math.random().toString(36).substr(2, 9)}">${item}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Animate Safety AI elements
+        function animateSafetyAI() {
+            const elements = document.querySelectorAll('.tip-card, .feature-card, .safety-nav-btn');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+        
+        // Copy to clipboard function
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy', 'error');
+            });
+        }
+    </script>
+</body>
+</html>
