@@ -67,9 +67,9 @@ Project/
          │         Trains: RF, XGBoost, LightGBM, CatBoost, LSTM, etc.
          │         Returns: Model results and metrics
          │
-         ├──► Step 6: ensemble.py
-         │    └─── fit_weighted_average()
-         │         Creates ensemble from all models
+        ├──► Step 6: ensemble.py
+        │    └─── fit_weighted_average()
+        │         Creates ensemble from Random Forest and XGBoost
          │
          ├──► Step 7: Evaluate on test set
          │    └─── Calculate metrics (MAE, RMSE, R²)
@@ -188,19 +188,12 @@ Project/
 **Output**: DataFrame with 100+ features
 
 ### 4. `model_trainer.py`
-**Purpose**: Train multiple ML/DL models
+**Purpose**: Train selected models
 
 **Key Functions**:
-- `train_all_models()` - Train all available models
+- `train_selected_models()` - Train Random Forest and XGBoost
   - Random Forest
-  - Gradient Boosting
   - XGBoost
-  - LightGBM
-  - CatBoost
-  - LSTM
-  - BiLSTM
-  - GRU
-  - CNN-LSTM
 
 **Input**: X_train, y_train, X_val, y_val
 **Output**: Trained models and metrics
@@ -211,7 +204,7 @@ Project/
 **Key Functions**:
 - `predict_temperature()` - Generate predictions
   - Prepare features for future timestamps
-  - Get predictions from all models
+-  - Get predictions from both models
   - Ensemble predictions
   - Apply smoothing
 
@@ -243,6 +236,7 @@ Project/
 - `GET /api/predict/24h` - 24-hour forecast
 - `GET /api/predict/7d` - 7-day forecast
 - `GET /api/weather/current` - Current weather
+- `GET /api/weather/location` - Current weather by coordinates (`lat`,`lon`)
 - `GET /api/history` - Historical data
 - `POST /api/retrain` - Trigger retraining
 - `GET /api/training/status` - Training status
@@ -276,6 +270,27 @@ API Request → orchestrator.predict() → fetcher.fetch() → predictor.predict
 fetch('/api/predict?hours=24')
   .then(response => response.json())
   .then(data => updateUI(data))
+```
+
+```javascript
+// Use My Location: geolocation with manual fallback
+function requestLocationPermission() {
+  if (!navigator.geolocation) {
+    // Manual input fallback
+    const lat = parseFloat(prompt('Latitude')); const lon = parseFloat(prompt('Longitude'));
+    if (isFinite(lat) && isFinite(lon)) {
+      return fetch(`/api/weather/location?lat=${lat}&lon=${lon}`);
+    }
+    return fetch('/api/weather/current');
+  }
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      p => resolve(fetch(`/api/weather/location?lat=${p.coords.latitude}&lon=${p.coords.longitude}`)),
+      () => resolve(fetch('/api/weather/current')),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    );
+  });
+}
 ```
 
 ## 🚀 Execution Paths
@@ -412,6 +427,8 @@ python main_controller.py server
 - `is_trained`: Boolean (model loaded and ready)
 - `model_loaded`: Boolean (model file loaded)
 - `training_status`: Current training state
+- `target_accuracy_min`: Minimum target accuracy shown in UI (%)
+- `target_accuracy_max`: Maximum target accuracy shown in UI (%)
 
 ## 🎯 Best Practices Implemented
 
@@ -423,6 +440,7 @@ python main_controller.py server
 6. **Production Ready**: Error handling, logging, status tracking
 7. **API Design**: RESTful endpoints, JSON responses
 8. **Async Training**: Non-blocking training via threads
+9. **UI Presentation Guardrails**: R² display capped at 95% to avoid misleading perfect scores
 
 ## 🔐 Security Considerations
 
