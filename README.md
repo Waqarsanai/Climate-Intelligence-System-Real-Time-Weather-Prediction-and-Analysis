@@ -1,4 +1,4 @@
-# System Architecture & Control Flow Documentation
+# System Architecture
 
 ## 📁 Project Structure
 
@@ -8,11 +8,10 @@ Project/
 │   ├── __init__.py
 │   ├── config.py                  # Configuration settings
 │   ├── data_loader.py             # Loads raw weather data
-│   ├── cleaner.py                 # Cleans and preprocesses data
-│   ├── features.py                # Feature engineering
-│   ├── model_trainer.py           # Trains ML/DL models
-│   ├── predictor.py               # Makes predictions (basic)
-│   ├── advanced_predictor.py      # Advanced predictions with ensemble
+│   ├── data_cleaner.py            # Cleans and preprocesses data
+│   ├── feature_engineer.py        # Feature engineering
+│   ├── model_trainer.py           # Trains models (RF/XGBoost primary)
+│   ├── advanced_predictor.py      # Advanced predictions with ensemble (primary)
 │   ├── orchestrator.py            # Main controller/orchestrator
 │   ├── api_server.py              # Flask API server
 │   ├── fetcher.py                 # Fetches real-time weather
@@ -21,7 +20,6 @@ Project/
 │   └── visualizer.py              # Visualization utilities
 │
 ├── main_controller.py             # Unified CLI + API host
-├── train_advanced_model.py        # Standalone training script
 ├── app.html                       # Frontend UI
 │
 ├── models/                        # Trained models storage
@@ -50,11 +48,11 @@ Project/
          │    └─── load_from_open_meteo() or load_from_file()
          │         Returns: Raw DataFrame
          │
-         ├──► Step 2: cleaner.py
+         ├──► Step 2: data_cleaner.py
          │    └─── clean_dataframe()
          │         Returns: Cleaned DataFrame
          │
-         ├──► Step 3: features.py
+         ├──► Step 3: feature_engineer.py
          │    └─── create_features()
          │         Returns: DataFrame with 100+ features
          │
@@ -64,7 +62,7 @@ Project/
          │
          ├──► Step 5: model_trainer.py
          │    └─── train_all_models()
-         │         Trains: RF, XGBoost, LightGBM, CatBoost, LSTM, etc.
+         │         Trains: Random Forest and XGBoost (primary). Others optional via config.
          │         Returns: Model results and metrics
          │
         ├──► Step 6: ensemble.py
@@ -198,7 +196,7 @@ Project/
 **Input**: X_train, y_train, X_val, y_val
 **Output**: Trained models and metrics
 
-### 5. `predictor.py` / `advanced_predictor.py`
+### 5. `advanced_predictor.py`
 **Purpose**: Make weather predictions
 
 **Key Functions**:
@@ -260,8 +258,8 @@ data_loader → cleaner → features → model_trainer → ensemble → save
 
 ### Prediction Integration
 ```python
-# api_server.py → orchestrator.py → predictor.py
-API Request → orchestrator.predict() → fetcher.fetch() → predictor.predict_temperature()
+# api_server.py → orchestrator.py → advanced_predictor.py
+API Request → orchestrator.predict() → fetcher.fetch() → AdvancedKarachiPredictor.predict_temperature()
 ```
 
 ### UI Integration
@@ -330,6 +328,8 @@ GET /api/predict?hours=24
 
 ### Path 4: Starting Server
 ```bash
+python -m weather_app.api_server
+# or
 python main_controller.py server
 ```
 1. Creates `WeatherAPIServer()`
@@ -477,12 +477,269 @@ python main_controller.py server
 
 The system follows a clean, modular architecture:
 
-- **Data Layer**: `data_loader.py`, `cleaner.py`
-- **Feature Layer**: `features.py`
+- **Data Layer**: `data_loader.py`, `data_cleaner.py`
+- **Feature Layer**: `feature_engineer.py`
 - **Model Layer**: `model_trainer.py`, `ensemble.py`
-- **Prediction Layer**: `predictor.py`, `advanced_predictor.py`
+- **Prediction Layer**: `advanced_predictor.py`
 - **Control Layer**: `orchestrator.py`
 - **API Layer**: `api_server.py`
 - **UI Layer**: `app.html`
 
 All layers communicate through well-defined interfaces, making the system maintainable, testable, and extensible.
+
+## A–Z Project Guide
+
+**A. Aim**
+- Provide accurate short-range weather forecasts for Karachi with a modular ML system and a simple Flask API + UI.
+
+**B. Background**
+- Uses Open‑Meteo for real-time/historic weather; trains on engineered features; serves predictions and status to UI.
+
+**C. Components**
+- Core modules: `data_loader.py`, `data_cleaner.py`, `feature_engineer.py`, `model_trainer.py`, `ensemble.py`, `advanced_predictor.py`, `orchestrator.py`, `api_server.py`.
+
+**D. Data Sources**
+- Live: Open‑Meteo API via `fetcher.py`.
+- File: CSV via `data_loader.load_from_file()`.
+
+**E. Engineering**
+- Feature engineering includes temporal, lag, rolling stats, and meteorological derived metrics in `feature_engineer.py`.
+
+**F. Forecasting**
+- Primary models: Random Forest and XGBoost. Ensemble combines both for robust predictions.
+
+**G. Guardrails**
+- UI caps displayed R² at 95% to avoid misleading perfect scores; shows Actual vs Target accuracy.
+
+**H. Health & Status**
+- `GET /health`, `GET /api/system/status`, `GET /api/training/status` provide system and training visibility.
+
+**I. Integration**
+- UI in `app.html` calls `/api/*` endpoints; geolocation with manual fallback to ensure usability.
+
+**J. Jobs (Training)**
+- Trigger via `POST /api/retrain` or CLI (`python main_controller.py train`). Async training runs in background.
+
+**K. Key Config**
+- `weather_app/config.py` controls directories, targets, and `allow_synthetic_training` flag for controlled fallbacks.
+
+**L. Logging**
+- Operational logs in `weather_prediction.log`; module-specific logs under `logs/`.
+
+**M. Metrics**
+- MAE, RMSE, R², Within 0.5°C and 1°C; saved to `models/training_metadata_*.json` and exposed via status APIs.
+
+**N. Networking**
+- Flask server exposes REST endpoints; CORS enabled for frontend.
+
+**O. Orchestration**
+- `orchestrator.py` coordinates training, prediction, model loading, and status management.
+
+**P. Prediction API**
+- `GET /api/predict`, `GET /api/predict/24h`, `GET /api/predict/7d`; 24h starts at current hour.
+
+**Q. Quick Commands**
+- Start server: `python -m weather_app.api_server` or `python main_controller.py server`.
+- Retrain: `curl -X POST http://localhost:5000/api/retrain`.
+
+**R. Reliability**
+- Fallbacks ensure predictions return even if external data is temporarily unavailable; synthetic training gated by config.
+
+**S. Security**
+- Input validation, cautious error messaging, optional auth and rate limiting for production use.
+
+**T. Testing**
+- Unit, integration, API, and end-to-end testing suggested; structured to add test suites per module.
+
+**U. UI**
+- Minimal themed UI; clear notifications; geolocation permission with manual fallback and defaults.
+
+**V. Versioning**
+- Models saved with timestamped filenames; latest model load supported.
+
+**W. Workflow**
+- Train → Evaluate → Save → Serve; retrain on demand with status polling from UI.
+
+**X. eXtensibility**
+- Easy to add models/features; optional LightGBM/CatBoost can be enabled.
+
+**Y. Yield (Performance)**
+- Targets: Accuracy band 93–95%, Within 1°C > 90% on stable data.
+
+**Z. Zero‑Downtime Goals**
+- Async retraining prevents API downtime; ensemble provides stable outputs during model updates.
+
+## Module Flowcharts
+
+### weather_app/api_server.py
+```
+[Flask App]
+  → Register routes
+  → Route handler
+     → Validate input
+     → Orchestrator call
+        → predict | train_pipeline | get_system_status | get_training_status
+     → Format JSON
+  → Return response
+```
+
+### weather_app/orchestrator.py
+```
+[WeatherSystemOrchestrator]
+  → train_pipeline
+     → data_loader.load (API/File)
+     → data_cleaner.clean_dataframe
+     → feature_engineer.create_features
+     → data_loader.create_training_dataset
+     → model_trainer.train_selected_models
+     → ensemble.fit_weighted_average
+     → evaluate (MAE/RMSE/R²)
+     → save models & metadata
+  → predict
+     → ensure model loaded
+     → fetcher.fetch (current)
+     → advanced_predictor.predict_temperature
+     → package predictions
+  → get_system_status / get_training_status
+```
+
+### weather_app/data_loader.py
+```
+[DataLoader]
+  → load_from_open_meteo
+  → load_from_file
+  → create_training_dataset (split train/val/test)
+  → prepare_features_target (X, y)
+```
+
+### weather_app/data_cleaner.py
+```
+[WeatherDataCleaner]
+  → fix timestamps
+  → remove duplicates
+  → convert units (F→C)
+  → handle missing values
+  → remove outliers
+  → validate ranges
+```
+
+### weather_app/feature_engineer.py
+```
+[AdvancedFeatureEngineer]
+  → temporal (hour/day/month, cyclical)
+  → lags (1h/3h/6h/12h/24h)
+  → rolling stats (mean/std/min/max)
+  → meteorological (dew point, heat index)
+  → interactions & trends
+```
+
+### weather_app/model_trainer.py
+```
+[ModelTrainer]
+  → train_selected_models
+     → RandomForest
+     → XGBoost
+  → evaluate models (val/test)
+  → return model artifacts & metrics
+```
+
+### weather_app/ensemble.py
+```
+[Ensemble]
+  → fit_weighted_average(RF, XGB)
+  → predict_weighted_average
+  → save/load ensemble
+```
+
+### weather_app/advanced_predictor.py
+```
+[AdvancedKarachiPredictor]
+  → load_latest_model / load_model(path)
+  → prepare future feature matrix
+  → RF predict + XGB predict
+  → ensemble combine + smoothing
+  → format output list {time, temp}
+```
+
+### weather_app/fetcher.py
+```
+[RealTimeWeatherDataFetcher]
+  → fetch() current weather
+  → fetch_area_future_hourly(lat, lon, hours)
+  → internal Open‑Meteo helpers
+```
+
+### weather_app/hyperparameter_tuner.py
+```
+[HyperparameterTuner]
+  → tune_random_forest (grid/random)
+  → tune_xgboost (grid/random)
+  → report best params & metrics
+```
+
+### weather_app/system.py
+```
+[WeatherSystem]
+  → AdvancedKarachiPredictor
+  → convenience methods to wire predictor + fetcher
+```
+
+### weather_app/processor.py
+```
+[Processor]
+  → transform API results into UI‑friendly structures
+  → compute aggregates/labels/icons
+```
+
+### weather_app/reference_store.py
+```
+[ReferenceStore]
+  → store/load static reference data
+  → units, icons, lookup tables
+```
+
+### weather_app/logging_utils.py
+```
+[Logging]
+  → configure module loggers
+  → handlers/formatters
+```
+
+### weather_app/calibration.py
+```
+[Calibration]
+  → area/seasonal adjustments
+  → apply bias correction using metadata
+```
+
+### weather_app/visualizer.py
+```
+[Visualizer]
+  → plot predictions & metrics
+  → generate charts under weather_visualizations/
+```
+
+### weather_app/__init__.py
+```
+[Package Entry]
+  → export AdvancedKarachiPredictor
+  → alias KarachiWeatherPredictor = AdvancedKarachiPredictor
+```
+
+### main_controller.py
+```
+[Controller]
+  → server: start Flask (API + UI)
+  → train: invoke orchestrator training
+  → utility commands
+```
+
+### app.html
+```
+[Frontend]
+  → UI elements (current weather, forecast)
+  → JS fetch calls to /api/*
+  → geolocation + manual fallback
+  → metrics rendering (Actual vs Target)
+```
+
