@@ -86,6 +86,7 @@ The system follows a modular architecture controlled by a central Orchestrator. 
 ```bash
 git clone [https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis.git](https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis.git)
 cd Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis
+```
 
 ## 📁 Project Structure
 
@@ -829,4 +830,10 @@ All layers communicate through well-defined interfaces, making the system mainta
   → geolocation + manual fallback
   → metrics rendering (Actual vs Target)
 ```
+📸 Visuals
+<div align="center"> <img src="https://www.google.com/search?q=https://via.placeholder.com/800x400/004F71/ffffff%3Ftext%3DInteractive%2BDashboard%2BPreview" alt="Dashboard" style="border-radius: 10px; margin-bottom: 20px;">
 
+
+<img src="https://www.google.com/search?q=https://via.placeholder.com/350x200/2ecc71/ffffff%3Ftext%3DModel%2BPerformance%2BMetrics" alt="Metrics" style="border-radius: 10px; margin: 5px;"> <img src="https://www.google.com/search?q=https://via.placeholder.com/350x200/e74c3c/ffffff%3Ftext%3DSafety%2BAI%2BChat" alt="Chatbot" style="border-radius: 10px; margin: 5px;"> </div>
+
+<div align="center"> <p>Made with 💙 and Python</p> </div>
