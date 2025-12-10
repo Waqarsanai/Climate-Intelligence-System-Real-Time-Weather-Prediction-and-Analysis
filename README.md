@@ -1,4 +1,91 @@
-# System Architecture
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=004F71&height=250&section=header&text=Climate%20Intelligence&fontSize=70&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Real-Time%20Karachi%20Weather%20Prediction%20System&descAlignY=60&descSize=20" alt="Climate Intelligence Banner" width="100%"/>
+
+  <br />
+
+  <p>
+    <a href="https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis">
+      <img src="https://img.shields.io/github/last-commit/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis?style=for-the-badge&color=2ecc71" alt="Last Commit" />
+    </a>
+    <a href="https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis/stargazers">
+      <img src="https://img.shields.io/github/stars/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis?style=for-the-badge&color=f39c12" alt="Stars" />
+    </a>
+    <a href="https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis/issues">
+      <img src="https://img.shields.io/github/issues/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis?style=for-the-badge&color=e74c3c" alt="Issues" />
+    </a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+    <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" />
+    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" />
+    <img src="https://img.shields.io/badge/Scikit_Learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" />
+    <img src="https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white" />
+  </p>
+  
+  <p><b>🛡️ AI-Powered Safety • 🌦️ Hyper-Local Forecasting • 🧠 Deep Ensemble Learning</b></p>
+  
+  <p>
+    <a href="#-about-the-project">About</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-key-features">Features</a> •
+    <a href="#-installation">Installation</a> •
+    <a href="#-api-documentation">API Docs</a>
+  </p>
+</div>
+
+---
+
+### 🌍 About The Project
+
+The **Climate Intelligence System** is an end-to-end data science solution designed specifically for **Karachi's** unique micro-climate. Unlike generic weather apps, this system leverages historical data, real-time API integration, and advanced ensemble learning to provide actionable insights for agriculture, urban planning, and public safety.
+
+It features a robust **Orchestrator Pipeline** that automates data loading, cleaning, feature engineering, and model training, serving predictions through a modern **Flask API** and **Interactive Dashboard**.
+
+> *"Solving weather unpredictability with data-driven precision."*
+
+---
+
+### 🏗️ Architecture
+
+The system follows a modular architecture controlled by a central Orchestrator. It integrates multiple data sources, processes them through a rigorous cleaning pipeline, and feeds them into a hybrid ensemble of machine learning and deep learning models.
+
+
+
+[Image of System Architecture Diagram]
+
+<div align="center">
+  <img src="Diagram.png" alt="System Architecture Diagram" width="95%" style="border-radius: 10px; border: 2px solid #ddd;">
+</div>
+
+**System Flow:**
+1.  **Data Ingestion**: Fetches real-time data from Open-Meteo API or loads historical CSV datasets.
+2.  **Preprocessing**: Cleaning pipeline removes outliers, fixes timestamps, and handles missing values.
+3.  **Feature Engineering**: Generates lag features, rolling statistics, and meteorological indices (Heat Index, Dew Point).
+4.  **Modeling**: Trains and stacks Hybrid Ensembles (Random Forest + XGBoost + LSTM).
+5.  **Serving**: `api_server.py` exposes REST endpoints for the Frontend Dashboard (`app.html`).
+
+---
+
+### ⚡ Key Features
+
+| Feature | Description |
+| :--- | :--- |
+| **🧠 Advanced Ensemble** | Combines **Random Forest, XGBoost, LightGBM**, and Deep Learning models (**LSTM, GRU**) for superior accuracy. |
+| **🛡️ Safety AI Chatbot** | Built-in AI assistant providing real-time safety tips for floods, heatwaves, and storms. |
+| **📍 Area-Wise Mapping** | Specific forecasts for Karachi localities: **Clifton, DHA, Gulshan, Malir, etc.** with custom micro-climate offsets. |
+| **🔄 Automated Pipeline** | Self-healing pipeline that handles retraining (`/api/retrain`) and model versioning without downtime. |
+| **📊 Smart Visualization** | Interactive Chart.js dashboards showing 24h forecasts, model metrics (RMSE/MAE), and error distribution. |
+| **🧹 Robust Cleaning** | Automatic outlier detection (IQR), missing value imputation, and correction of "unrealistic values". |
+
+---
+
+### 🚀 Installation & Usage
+
+#### 1. Clone the Repository
+```bash
+git clone [https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis.git](https://github.com/Waqarsanai/Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis.git)
+cd Climate-Intelligence-System-Real-Time-Weather-Prediction-and-Analysis
 
 ## 📁 Project Structure
 
