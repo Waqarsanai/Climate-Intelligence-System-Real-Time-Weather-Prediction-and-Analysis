@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Logs
+*.log
+
+# Local data/model artifacts
+models/
+data/
+cache/
+weather_visualizations/
+logs/
+
+# OS files
+.DS_Store
+
+# Env files
+.env
+.env.*
+
+# Node/Vercel
+.vercel/
