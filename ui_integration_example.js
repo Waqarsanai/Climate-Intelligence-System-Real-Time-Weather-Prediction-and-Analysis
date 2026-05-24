@@ -113,3 +113,64 @@ async function initializeUI() {
   await loadForecast();
   await loadMetrics();
 }
+
+function fetchCurrentWeather() {
+  fetch('/api/weather/current')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('weatherCondition').textContent = data.description || '—';
+      document.getElementById('currentTemp').textContent = (data.temperature?.toFixed(1) || '--') + '°C';
+      document.getElementById('humidity').textContent = (data.humidity ?? '--') + '%';
+      document.getElementById('pressure').textContent = data.pressure ?? '--';
+      document.getElementById('windSpeed').textContent = data.wind_speed ?? '--';
+      document.getElementById('precipitation').textContent = data.precipitation ?? '--';
+      document.getElementById('cloudCover').textContent = (data.cloud_cover ?? '--') + '%';
+      document.getElementById('feelsLike').textContent = (data.feels_like?.toFixed(1) || '--') + '°C';
+      document.getElementById('currentLocation').textContent = data.location_name || 'Karachi';
+      document.getElementById('lastUpdate').textContent = 'Updated: ' + (data.timestamp || new Date().toLocaleString());
+    })
+    .catch(_ => {
+      document.getElementById('weatherCondition').textContent = 'Unavailable';
+    });
+}
+
+function fetchForecast24h() {
+  const listDiv = document.getElementById('forecastList');
+  listDiv.innerHTML = 'Loading...';
+  fetch('/api/predict/24h')
+    .then(res => res.json())
+    .then(data => {
+      const items = (data.predictions || []).map(item => `<div class="list-item"><span>${item.time.split('T')[1]}</span><span>${item.temp?.toFixed(1) ?? '--'}°C</span><span>${item.conditions || ''}</span></div>`);
+      listDiv.innerHTML = items.join('') || '<div>No data</div>';
+    })
+    .catch(() => listDiv.innerHTML = 'Unavailable');
+}
+
+function fetchModelMetrics() {
+  fetch('/api/system/status')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.model_metrics) return;
+      const m = data.model_metrics;
+      setProgress('r2Progress', m.R2 * 100);
+      document.getElementById('r2Score').textContent = m.R2?.toFixed(2) || '--';
+      document.getElementById('rmse').textContent = m.RMSE?.toFixed(2) || '--';
+      document.getElementById('mae').textContent = m.MAE?.toFixed(2) || '--';
+      document.getElementById('accuracy').textContent = (m.target_accuracy_max || '--') + '%';
+    });
+}
+function setProgress(id, val) {
+  document.getElementById(id).style.width = val + '%';
+}
+function bindUIEvents() {
+  document.getElementById('refresh-button').onclick = fetchCurrentWeather;
+  document.getElementById('forecast-24h-btn').onclick = fetchForecast24h;
+  document.getElementById('retrain-button').onclick = retrain;
+}
+function retrain() {
+  fetch('/api/retrain', {method:'POST'})
+    .then(res => res.json())
+    .then(data => {
+      alert(data.success ? 'Retraining started!' : ('Could not start retrain: ' + data.error));
+    })
+}
